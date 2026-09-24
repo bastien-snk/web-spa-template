@@ -1,0 +1,4 @@
+interface:
+    display_name: 'UI Build'
+    short_description: 'Build UI from approved briefs'
+    default_prompt: 'Use $build to implement the approved Bots page.'

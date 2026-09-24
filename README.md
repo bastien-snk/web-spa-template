@@ -1,0 +1,35 @@
+# Web SPA Template
+
+Personal Vite SPA template for modular web applications.
+
+## Development
+
+```sh
+bun install
+cp .env.example .env
+bun run dev
+```
+
+`VITE_API_URL` is the browser-facing base URL for the application API. Configure the generated SDK and Better Auth client in `src/integrations/api` and `src/integrations/auth` when deriving an application.
+
+## Checks
+
+```sh
+bun run format:check
+bun run lint
+bun run typecheck
+bun run test
+bun run build
+```
+
+## Deployment
+
+The included Docker and nginx configuration is optional. It provides a static SPA container with a runtime `/api/` proxy. Projects deployed to Vercel, Render, Railway, or another provider can ignore these files.
+
+## Template upgrades
+
+Applications retain this repository as the `web-spa-template` remote. Upgrade only to a tagged template release, directly on the current branch, in a dedicated conventional commit such as `chore(template): upgrade to v0.2.0`. Resolve application-specific conflicts, then run the full checks.
+
+## Architecture
+
+See [AGENTS.md](AGENTS.md) and [docs/architecture.md](docs/architecture.md).

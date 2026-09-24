@@ -1,0 +1,4 @@
+interface:
+    display_name: 'UI Review'
+    short_description: 'Review UI for product consistency'
+    default_prompt: 'Use $review to review the Bots page.'

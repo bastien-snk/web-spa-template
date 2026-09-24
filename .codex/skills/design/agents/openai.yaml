@@ -1,0 +1,4 @@
+interface:
+    display_name: 'UI Design'
+    short_description: 'Design pages with its UI system'
+    default_prompt: 'Use $design to design the Bots page.'

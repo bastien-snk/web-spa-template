@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+*.log
+.env
+.env.*
+!.env.example
+.git
+.github
+.vscode
+.idea
+.DS_Store
+*.tsbuildinfo
+.vite
+.tanstack
+vite.config.*.timestamp-*
