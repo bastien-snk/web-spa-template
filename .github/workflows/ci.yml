@@ -70,3 +70,45 @@ jobs:
                   trap 'docker rm --force web-spa-template-ci' EXIT
                   curl --fail --retry 5 --retry-connrefused --silent http://localhost:8080/ | grep '<div id="root"></div>'
                   curl --fail --retry 5 --retry-connrefused --silent http://localhost:8080/ci-route | grep '<div id="root"></div>'
+
+    publish:
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        needs: docker
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Log in to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Prepare image metadata
+              id: metadata
+              uses: docker/metadata-action@v5
+              with:
+                  images: ghcr.io/${{ github.repository }}
+                  tags: |
+                      type=raw,value=latest
+                      type=sha,prefix=sha-
+
+            - name: Publish container image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  tags: ${{ steps.metadata.outputs.tags }}
+                  labels: ${{ steps.metadata.outputs.labels }}
+                  build-args: VITE_API_URL=/api
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
