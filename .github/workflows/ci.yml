@@ -1,0 +1,72 @@
+name: CI
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    checks:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.10
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Lint
+              run: bun run lint
+
+            - name: Typecheck
+              run: bun run typecheck
+
+            - name: Test
+              run: bun run test
+
+            - name: Build
+              run: bun run build
+
+    docker:
+        needs: checks
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build container image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  load: true
+                  push: false
+                  tags: web-spa-template:ci
+                  build-args: VITE_API_URL=/api
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Verify nginx SPA serving
+              run: |
+                  docker run --detach --rm --name web-spa-template-ci --publish 8080:80 \
+                      --env BACKEND_API_UPSTREAM=http://127.0.0.1:3000 \
+                      web-spa-template:ci
+                  trap 'docker rm --force web-spa-template-ci' EXIT
+                  curl --fail --retry 5 --retry-connrefused --silent http://localhost:8080/ | grep '<div id="root"></div>'
+                  curl --fail --retry 5 --retry-connrefused --silent http://localhost:8080/ci-route | grep '<div id="root"></div>'
