@@ -64,12 +64,32 @@ jobs:
 
             - name: Verify nginx SPA serving
               run: |
+                  container_name=web-spa-template-ci
+                  response_file=$(mktemp)
+                  cleanup() {
+                      exit_code=$?
+                      if [ "$exit_code" -ne 0 ]; then
+                          docker logs "$container_name" || true
+                      fi
+                      docker rm --force "$container_name" || true
+                      exit "$exit_code"
+                  }
+                  trap cleanup EXIT
                   docker run --detach --rm --name web-spa-template-ci --publish 8080:80 \
                       --env BACKEND_API_UPSTREAM=http://127.0.0.1:3000 \
                       web-spa-template:ci
-                  trap 'docker rm --force web-spa-template-ci' EXIT
-                  curl --fail --retry 5 --retry-connrefused --silent http://localhost:8080/ | grep '<div id="root"></div>'
-                  curl --fail --retry 5 --retry-connrefused --silent http://localhost:8080/ci-route | grep '<div id="root"></div>'
+                  is_ready=false
+                  for attempt in $(seq 1 10); do
+                      if curl --fail --silent --output "$response_file" http://127.0.0.1:8080/; then
+                          is_ready=true
+                          break
+                      fi
+                      sleep 1
+                  done
+                  test "$is_ready" = true
+                  grep -Fq '<div id="root"></div>' "$response_file"
+                  curl --fail --silent --output "$response_file" http://127.0.0.1:8080/ci-route
+                  grep -Fq '<div id="root"></div>' "$response_file"
 
     publish:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
