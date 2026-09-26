@@ -10,7 +10,7 @@ cp .env.example .env
 bun run dev
 ```
 
-`VITE_API_URL` is the browser-facing base URL for the application API. Configure the generated SDK and Better Auth client in `src/integrations/api` and `src/integrations/auth` when deriving an application.
+`VITE_API_URL` is the browser-facing base URL for the application API. It is compiled into the SPA at build time. Configure the generated SDK and Better Auth client in `src/integrations/api` and `src/integrations/auth` when deriving an application.
 
 ## Checks
 
@@ -24,9 +24,9 @@ bun run build
 
 ## Deployment
 
-The included Docker and nginx configuration is optional. It provides a static SPA container with a runtime `/api/` proxy. Projects deployed to Vercel, Render, Railway, or another provider can ignore these files.
+The included Docker and nginx configuration is optional. It provides a static SPA container with client-side routing. Projects deployed to Vercel, Render, Railway, or another provider can ignore these files.
 
-Every push to `main` publishes the verified container image to GitHub Container Registry as `ghcr.io/<owner>/<repository>:latest` and `ghcr.io/<owner>/<repository>:sha-<commit>`. The package is private by default. The container requires `BACKEND_API_UPSTREAM` at runtime for nginx to proxy `/api/` requests.
+Every container build must provide `VITE_API_URL`, for example `https://api.example.com`. Every push to `main` publishes the verified container image to GitHub Container Registry as `ghcr.io/<owner>/<repository>:latest` and `ghcr.io/<owner>/<repository>:sha-<commit>`. The package is private by default.
 
 ## Template upgrades
 

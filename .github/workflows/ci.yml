@@ -58,7 +58,7 @@ jobs:
                   load: true
                   push: false
                   tags: web-spa-template:ci
-                  build-args: VITE_API_URL=/api
+                  build-args: VITE_API_URL=https://api.example.test
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
@@ -75,9 +75,7 @@ jobs:
                       exit "$exit_code"
                   }
                   trap cleanup EXIT
-                  docker run --detach --rm --name web-spa-template-ci --publish 8080:80 \
-                      --env BACKEND_API_UPSTREAM=http://127.0.0.1:3000 \
-                      web-spa-template:ci
+                  docker run --detach --rm --name web-spa-template-ci --publish 8080:80 web-spa-template:ci
                   is_ready=false
                   for attempt in $(seq 1 10); do
                       if curl --fail --silent --output "$response_file" http://127.0.0.1:8080/; then
@@ -129,6 +127,6 @@ jobs:
                   push: true
                   tags: ${{ steps.metadata.outputs.tags }}
                   labels: ${{ steps.metadata.outputs.labels }}
-                  build-args: VITE_API_URL=/api
+                  build-args: VITE_API_URL=https://api.example.test
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
