@@ -7,6 +7,7 @@ import { formatPercent } from '@/integrations/i18next/formatters/format-percent'
 import { formatPlural } from '@/integrations/i18next/formatters/format-plural';
 import { formatDuration } from '@/integrations/i18next/formatters/format-duration';
 import { formatDateTime } from '@/integrations/i18next/formatters/format-date-time';
+import { formatDate } from '@/integrations/i18next/formatters/format-date';
 import { formatRelativeTime } from '@/integrations/i18next/formatters/format-relative-time';
 import { formatTime } from '@/integrations/i18next/formatters/format-time';
 
@@ -15,6 +16,7 @@ export function useFormatters() {
     const locale = i18n.i18n.resolvedLanguage ?? i18n.i18n.language ?? 'en';
 
     return {
+        formatDate: useCallback((value: string) => formatDate(value, locale), [locale]),
         formatDateTime: useCallback((value: string) => formatDateTime(value, locale), [locale]),
         formatDuration: useCallback((value: number) => formatDuration(value, locale), [locale]),
         formatMoney: useCallback((money: Parameters<typeof formatMoney>[0]) => formatMoney(money, locale), [locale]),
