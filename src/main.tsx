@@ -10,7 +10,11 @@ import { TooltipProvider } from '@/shared/ui/shadcn/tooltip';
 import { AppToaster } from '@/shared/ui/app/toast/AppToaster';
 import './index.css';
 
-await initI18next();
+await initI18next({
+    language: 'en',
+    fallbackLanguage: 'en',
+    supportedLanguages: ['en', 'fr'],
+});
 initApi();
 const queryClient = initTanstackQuery();
 const router = createAppRouter(queryClient);
