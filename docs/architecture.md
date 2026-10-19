@@ -31,6 +31,8 @@ Use a feature-scoped store only for cross-component client state that cannot be 
 feature ui -> feature model -> feature api -> SDK
 feature model -> optional feature domain
 feature domain -> nothing
+modules -> system contracts
+app composition -> modules + system + integrations
 ```
 
 Allowed dependencies:
@@ -39,6 +41,8 @@ Allowed dependencies:
 - `model/` imports `api/`, `domain/`, and shared utilities;
 - `api/` adapts API contracts and operations from the local `@xyz/sdk` dependency;
 - `domain/` contains pure reusable rules and types only.
+- `system/` exposes app-wide contracts and runtime services without depending on feature modules or integrations;
+- `app/` is the composition layer that connects system services, feature modules, and integrations; feature modules must not import it.
 
 Forbidden dependencies:
 
@@ -73,6 +77,11 @@ src/
     api/                  # init() configures the local SDK
     i18next/                   # init() discovers JSON translation namespaces
     tanstack-query/            # init() returns the QueryClient
+    posthog/                   # optional PostHog SDK adapter
+  system/
+    events/                    # app-wide event contracts and in-memory bus
+    analytics/                 # provider contract, SDK adapter, and consent policy
+  app/                         # application-specific composition
   modules/
     auth/
   shared/
@@ -97,6 +106,23 @@ Integrations encapsulate third-party setup rather than feature behaviour. Each l
 - `api/init()` configures the SDK singleton with the browser API origin and cookie credentials.
 - `i18next/init()` discovers translation JSON files and resolves before React renders.
 - `tanstack-query/init()` creates and returns the application `QueryClient`.
+- `posthog/init()` initializes PostHog with capture opted out by default, in-memory persistence, autocapture disabled, and automatic pageviews disabled.
+
+### System services and application composition
+
+- `src/system/` contains app-wide contracts and runtime services that feature modules may depend on. System services must not import feature modules or integrations.
+- `src/app/` contains application-specific composition connecting system services, feature modules, and integrations. `main.tsx` remains the explicit composition root.
+
+### Application events
+
+- `src/system/events/` defines the synchronous application event bus contract and in-memory implementation. Modules may publish events through this system API; event types are owned by the module that defines their meaning.
+- Event handlers are synchronous. A handler failure must not prevent other handlers receiving an event or break the publishing action. Async work must be started and handled explicitly by the handler, not awaited by the bus.
+
+### Analytics and consent
+
+- `src/system/analytics/` contains the provider contract and consent-aware policy. Analytics SDKs are optional integrations; no data is collected unless consent is accepted and the provider is configured.
+- Analytics consumers belong in application composition or feature-owned handlers, not UI components. Consent checks fail closed when consent is pending, denied, expired, or unavailable.
+- A user-facing consent prompt is provided under `shared/ui/app`; applications may replace or omit it.
 
 ## 6. Feature module layout
 
