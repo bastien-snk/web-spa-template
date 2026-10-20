@@ -12,6 +12,7 @@ import { PersistentAnalyticsConsentReader } from '@/system/analytics/consent/per
 import { useAnalyticsConsentStore } from '@/system/analytics/consent/analytics-consent-store';
 import { ConsentAwareAnalyticsProvider } from '@/system/analytics/consent-aware-analytics-provider';
 import { PostHogAnalyticsProvider } from '@/system/analytics/posthog-analytics-provider';
+import { AnalyticsProviderContextProvider } from '@/system/analytics/react/AnalyticsProviderContextProvider';
 import { getEffectiveAnalyticsConsentStatus } from '@/system/analytics/consent/services/get-effective-analytics-consent-status';
 import { createAppRouter } from '@/router';
 import { TooltipProvider } from '@/shared/ui/shadcn/tooltip';
@@ -43,7 +44,9 @@ createRoot(document.getElementById('root')!).render(
         <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={150}>
                 <ApplicationEventBusProvider eventBus={applicationEventBus}>
-                    <RouterProvider router={router} />
+                    <AnalyticsProviderContextProvider analytics={analyticsProvider}>
+                        <RouterProvider router={router} />
+                    </AnalyticsProviderContextProvider>
                 </ApplicationEventBusProvider>
                 <AppToaster />
             </TooltipProvider>
